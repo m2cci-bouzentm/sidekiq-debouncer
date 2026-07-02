@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "debouncer/version"
-require_relative "debouncer/configuration"
-require_relative "debouncer/concern"
+require_relative "debounce/version"
+require_relative "debounce/configuration"
+require_relative "debounce/concern"
 
-module Sidekiq
-  module Debouncer
+module ActiveJob
+  module Debounce
     class Error < StandardError; end
 
     class << self

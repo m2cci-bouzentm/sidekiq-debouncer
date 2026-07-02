@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module Sidekiq
-  module Debouncer
+module ActiveJob
+  module Debounce
     class Configuration
       # Custom Redis connection. If not set, falls back to Redis.current
       attr_accessor :redis_connection

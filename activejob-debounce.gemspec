@@ -1,21 +1,22 @@
 # frozen_string_literal: true
 
-require_relative "lib/sidekiq/debouncer/version"
+require_relative "lib/activejob/debounce/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "sidekiq-debouncer"
-  spec.version = Sidekiq::Debouncer::VERSION
+  spec.name = "activejob-debounce"
+  spec.version = ActiveJob::Debounce::VERSION
   spec.authors = ["Mohamed Bouzentm"]
   spec.email = ["bouzentoutamohamed@gmail.com"]
 
-  spec.summary = "Debounce Sidekiq/ActiveJob jobs to prevent redundant API calls and rate limiting"
+  spec.summary = "Leading-edge debounce for ActiveJob. One job per debounce window, atomic Redis gating, crash recovery."
   spec.description = <<~DESC
-    A simple, zero-dependency debouncing solution for Sidekiq and ActiveJob.
-    Prevents redundant job execution by coalescing multiple calls within a
-    configurable time window into a single job execution. Perfect for avoiding
-    rate limits on external APIs like HubSpot, Stripe, Salesforce, etc.
+    A zero-dependency debouncing solution for ActiveJob. Uses Redis GETSET for
+    atomic dispatch-time gating — only 1 job enters the queue per debounce window.
+    Subsequent calls are true no-ops (nothing queued). Includes crash recovery
+    via expired timestamp detection. Works with any ActiveJob backend: Sidekiq,
+    GoodJob, Solid Queue, Resque, etc.
   DESC
-  spec.homepage = "https://github.com/m2cci-bouzentm/sidekiq-debouncer"
+  spec.homepage = "https://github.com/m2cci-bouzentm/activejob-debounce"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.7.0"
 
@@ -24,7 +25,6 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  # Specify which files should be added to the gem when it is released.
   spec.files = Dir.chdir(__dir__) do
     `git ls-files -z`.split("\x0").reject do |f|
       (File.expand_path(f) == __FILE__) ||
@@ -35,13 +35,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # Runtime dependencies - only what's truly required
   spec.add_dependency "activesupport", ">= 6.0"
   spec.add_dependency "redis", ">= 4.0"
 
-  # Development dependencies
   spec.add_development_dependency "activejob", ">= 6.0"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "rubocop", "~> 1.21"
 end

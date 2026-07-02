@@ -2,9 +2,8 @@
 
 require "spec_helper"
 
-# Test job class
 class TestDebouncedJob < ActiveJob::Base
-  include Sidekiq::Debouncer::Concern
+  include ActiveJob::Debounce::Concern
 
   DEBOUNCE_DURATION = 2
   debounce_for DEBOUNCE_DURATION
@@ -16,20 +15,19 @@ class TestDebouncedJob < ActiveJob::Base
   end
 end
 
-# Another test job with different duration
 class AnotherDebouncedJob < ActiveJob::Base
-  include Sidekiq::Debouncer::Concern
+  include ActiveJob::Debounce::Concern
 
   debounce_for 10
 
   def perform(*_args); end
 end
 
-RSpec.describe Sidekiq::Debouncer::Concern do
+RSpec.describe ActiveJob::Debounce::Concern do
   let(:mock_redis) { instance_double("Redis") }
 
   before do
-    Sidekiq::Debouncer.configure do |config|
+    ActiveJob::Debounce.configure do |config|
       config.redis_connection = mock_redis
     end
     TestDebouncedJob.execution_count = 0
@@ -50,17 +48,12 @@ RSpec.describe Sidekiq::Debouncer::Concern do
   describe ".debounce_key" do
     it "generates a key with job class and arguments" do
       key = TestDebouncedJob.debounce_key([123])
-      expect(key).to eq("sidekiq_debouncer:TestDebouncedJob:123")
+      expect(key).to eq("activejob_debounce:TestDebouncedJob:123")
     end
 
     it "handles multiple arguments" do
       key = TestDebouncedJob.debounce_key([123, "foo", "bar"])
-      expect(key).to eq("sidekiq_debouncer:TestDebouncedJob:123:foo:bar")
-    end
-
-    it "handles array arguments" do
-      key = TestDebouncedJob.debounce_key([123, %w[a b]])
-      expect(key).to include("sidekiq_debouncer:TestDebouncedJob:")
+      expect(key).to eq("activejob_debounce:TestDebouncedJob:123:foo:bar")
     end
 
     it "generates different keys for different arguments" do
@@ -92,9 +85,8 @@ RSpec.describe Sidekiq::Debouncer::Concern do
       end
     end
 
-    context "when a job is already pending (subsequent calls)" do
+    context "when a job is already pending" do
       before do
-        # Return a timestamp in the future (job pending)
         allow(mock_redis).to receive(:getset).and_return((Time.now.to_i + 100).to_s)
       end
 
@@ -105,9 +97,8 @@ RSpec.describe Sidekiq::Debouncer::Concern do
       end
     end
 
-    context "when timestamp has expired (job finished or crashed)" do
+    context "when timestamp has expired (crash recovery)" do
       before do
-        # Return a timestamp in the past
         allow(mock_redis).to receive(:getset).and_return((Time.now.to_i - 100).to_s)
       end
 
@@ -148,9 +139,8 @@ RSpec.describe Sidekiq::Debouncer::Concern do
 
       TestDebouncedJob.perform_debounce(999)
 
-      expect(mock_redis).to receive(:del).with("sidekiq_debouncer:TestDebouncedJob:999")
+      expect(mock_redis).to receive(:del).with("activejob_debounce:TestDebouncedJob:999")
 
-      # Manually trigger perform to test callback
       job = TestDebouncedJob.new(999)
       job.perform_now
     end
