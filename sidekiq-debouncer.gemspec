@@ -5,8 +5,8 @@ require_relative "lib/sidekiq/debouncer/version"
 Gem::Specification.new do |spec|
   spec.name = "sidekiq-debouncer"
   spec.version = Sidekiq::Debouncer::VERSION
-  spec.authors = ["Your Name"]
-  spec.email = ["your.email@example.com"]
+  spec.authors = ["Mohamed Bouzentm"]
+  spec.email = ["bouzentoutamohamed@gmail.com"]
 
   spec.summary = "Debounce Sidekiq/ActiveJob jobs to prevent redundant API calls and rate limiting"
   spec.description = <<~DESC
@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
     configurable time window into a single job execution. Perfect for avoiding
     rate limits on external APIs like HubSpot, Stripe, Salesforce, etc.
   DESC
-  spec.homepage = "https://github.com/yourusername/sidekiq-debouncer"
+  spec.homepage = "https://github.com/m2cci-bouzentm/sidekiq-debouncer"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.7.0"
 
